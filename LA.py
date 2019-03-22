@@ -50,6 +50,7 @@ class lexical_analyser:
 
         self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
 
+        """
         comment = False
         for line in self.line_array:
             if (line[0:2] != "//") or (line[0:2] != "/*") or comment:
@@ -60,7 +61,48 @@ class lexical_analyser:
                 new_line_obj = re.match(r'.*\*/', line[2:], re.M)
                 if new_line_obj:
                     comment = False
-        
+        """
+        comment = False
+        for line in self.line_array:
+            if comment:
+                #print(line)
+                comment_match = re.match(r'.*\*/', line, re.M)
+                if comment_match:
+                    comment = False
+                    continue
+                else:
+                    continue
+            
+            comment_match = re.match(r'.*//', line, re.M)
+            if comment_match:
+                for c in range(0, len(line)-1):
+                    if (line[c]+line[c+1]) == '//':
+                        index = c
+                        break
+                if c == 0:
+                    self.result_code.write(line[:index])
+                else:
+                    self.result_code.write(line[:index] + "\n")
+
+            else:
+                comment_match = re.match(r'.*/\*', line, re.M)
+                if comment_match:
+                    comment_match = re.match(r'.*\*/', line, re.M)
+                    if comment_match:
+                        for c in range(0, len(line)-1):
+                            if (line[c] + line[c+1]) == "/*":
+                                index = c
+                                break
+                        if index == 0:
+                            self.result_code.write(line[:index])
+                        else:
+                            self.result_code.write(line[:index] + "\n")
+                    else:
+                        comment = True
+
+                else:
+                    self.result_code.write(line)
+
         self.result_code.close() # Closing the intermediate file.
 
 if __name__ == '__main__':
