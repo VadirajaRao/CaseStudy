@@ -1,52 +1,57 @@
 # Program for lexical analysis of C programs
 
+# Library for using Regular Expression
 import re
 
 class lexical_analyser:
     """Class that contains all the functions necessary for lexical analysis."""
     def __init__(self, *args, **kwargs):
-        self.code = open("program.c", "r")
-        self.result_code = open("result.c", "w")
-        self.line_array = self.code.readlines()
+        self.code = open("program.c", "r") # Opening the input file in 'read' mode.
+        self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
+        self.line_array = self.code.readlines() # Obtaining an array of strings, where each string is a line from the input file.
 
     def remove_empty_lines(self):
         """To remove blank lines in the given program."""
+        # Looping over all the lines in the input file.
         for line in self.line_array:
+            # Checking if the line is empty.
             if line != "\n":
-                self.result_code.write(line)
-        self.result_code.close()
+                self.result_code.write(line) # Writing the non-empty line onto the intermediate file.
+        self.result_code.close() # Closing the intermediate file.
 
     def remove_tab_space(self):
         """To remove tab space in the given program."""
-        self.result_code = open("result.c", "r")
-        self.line_array = self.result_code.readlines()
-        self.result_code.close()
+        self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
+        self.line_array = self.result_code.readlines() # Obtaining an array of strings, where each string is a line from the intermediate file.
+        self.result_code.close() # Closing the intermediate file.
 
-
-        self.result_code = open("result.c", "w")
+        self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
+        # Looping over all the lines in the input file.
         for line in self.line_array:
+            # Checking if the line begins with a white space.
             if line[0] == " ":
+                # Checking from which position the code begins over a loop, in order to remove the tab space.
                 for c in range(1, len(line)):
                     if line[c] != " ":
-                        index = c
+                        index = c # Making note of the position from which the code begins in the line.
                         break
-                self.result_code.write(line[index:])
+                self.result_code.write(line[index:]) # Writing the line without the tab space into the intermediate file.
             else:
-                self.result_code.write(line)
+                self.result_code.write(line) # Writing the entire line into the intermediate file in case there is no tab space at the beginning.
 
-        self.result_code.close()
+        self.result_code.close() # Closing the intermediate file.
 
+    # NOTE: This function is not yet completed.
     def remove_comment_lines(self):
         """To remove comment lines in the give program."""
-        self.result_code = open("result.c", "r")
-        self.line_array = self.result_code.readlines()
-        self.result_code.close()
+        self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
+        self.line_array = self.result_code.readlines() # Obtaining an array of strings, where each string is a line from the intermediate file.
+        self.result_code.close() # Closing the intermediate file.
 
-        self.result_code = open("result.c", "w")
+        self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
 
         comment = False
         for line in self.line_array:
-            # For single line comment
             if (line[0:2] != "//") or (line[0:2] != "/*") or comment:
                 self.result_code.write(line)
 
@@ -56,10 +61,10 @@ class lexical_analyser:
                 if new_line_obj:
                     comment = False
         
-        self.result_code.close()
+        self.result_code.close() # Closing the intermediate file.
 
 if __name__ == '__main__':
-    la = lexical_analyser()
+    la = lexical_analyser() # Creating object for the class.
     la.remove_empty_lines()
     la.remove_tab_space()
     la.remove_comment_lines()
