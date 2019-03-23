@@ -9,9 +9,14 @@ class lexical_analyser:
         self.code = open("program.c", "r") # Opening the input file in 'read' mode.
         self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
         self.line_array = self.code.readlines() # Obtaining an array of strings, where each string is a line from the input file.
+        self.code.close();
 
     def remove_empty_lines(self):
         """To remove blank lines in the given program."""
+        self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
+        self.line_array = self.result_code.readlines() # Obtaining an array of strings, where each string is a line from the intermediate file.
+        self.result_code.close() # Closing the intermediate file.
+        self.result_code = open("result.c","w") #Opening the intermediate file in 'write' mode.
         # Looping over all the lines in the input file.
         for line in self.line_array:
             # Checking if the line is empty.
@@ -19,6 +24,7 @@ class lexical_analyser:
                 self.result_code.write(line) # Writing the non-empty line onto the intermediate file.
         self.result_code.close() # Closing the intermediate file.
 
+    #NOTE: Can just use `str`.strip() to remove leading and trailing spaces and tabs
     def remove_tab_space(self):
         """To remove tab space in the given program."""
         self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
@@ -41,30 +47,45 @@ class lexical_analyser:
 
         self.result_code.close() # Closing the intermediate file.
 
-    # NOTE: This function is not yet completed.
+    # NOTE: This function is made highly generalised for most kinda comments. But do test it
     def remove_comment_lines(self):
-        """To remove comment lines in the give program."""
-        self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
-        self.line_array = self.result_code.readlines() # Obtaining an array of strings, where each string is a line from the intermediate file.
-        self.result_code.close() # Closing the intermediate file.
-
-        self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
-
-        comment = False
+        flag_multi_comment = False #This flag is set to `True` only when theres a multi line comment
+        count=0; # Just for debugging purpose. Keeps the count of the number of lines read from input file
         for line in self.line_array:
-            if (line[0:2] != "//") or (line[0:2] != "/*") or comment:
-                self.result_code.write(line)
+            count += 1
+            if flag_multi_comment == True: # If it is a multi-line comment search for `*/` 
+                if re.search(r"\*/",line): # If the line has a '*/' then print the contents after '*/' in that line
+                    temp = re.split(r"\*/",line) # This function creates an array just before and after `*/`
+                    flag_multi_comment = False # Multi-Line comment has ended
+                    if len(temp[1].strip())>0: # Removes extra spaces and tabs.
+                        self.result_code.write(temp[1].strip()) #The contents to the left of `*/` is written only if it is >0
+            elif re.search("//",line):
+                temp = re.split('//',line)
+                if len(temp[0].strip())>0:
+                    self.result_code.write(temp[0].strip())
+                    self.result_code.write("\n")
+            elif re.search(r"/\*",line): # Searches for /* in the line
+                temp = re.split(r"/\*",line) # Divides the line into portion with /* as center
+                flag_multi_comment=True # Sets multi-line flag to True
+                if len(temp[0].strip())>0:  #contents to the left of /*
+                    self.result_code.write(temp[0].strip()+" ")
+                if re.search(r"\*/",line): # Checks if the */ occurs in the same line. 
+                    flag_multi_comment = False # In which case its treated as a single line comment
+                    temp = re.split(r"\*/",line) #contents to the right of */
+                    if len(temp[1].strip())>0:
+                        self.result_code.write(temp[1].strip()+"\n")
+            elif flag_multi_comment == False : #if its normal line not having //or */ or /*
+                self.result_code.write(line.strip()+"\n")
 
-            else:
-                comment = True
-                new_line_obj = re.match(r'.*\*/', line[2:], re.M)
-                if new_line_obj:
-                    comment = False
-        
+        print("Comment deleting.....")
+        print("False Flag Status mean successfully removed comments line")
+        print("Flag status: ",flag_multi_comment)
+        print("Number of lines parsed: ",count)
+
         self.result_code.close() # Closing the intermediate file.
 
 if __name__ == '__main__':
     la = lexical_analyser() # Creating object for the class.
+    la.remove_comment_lines()
     la.remove_empty_lines()
     la.remove_tab_space()
-    la.remove_comment_lines()

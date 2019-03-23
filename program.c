@@ -1,10 +1,19 @@
-// This is a sample program
-#include <stdio.h>
+/* This is your first 
+	c program */
+#include<stdio.h>//Attach some libraries
+int main() { //program execution starts from here
+/*Displays the contents to the console*/
+printf("Hello World!!")
 
-/* this program does nothing*/
-void main() {
-    int a;
-    float b = 10;
-    // I don't know why I need a comment here
-    printf("Hello world\n");
+	;
+	//extra newline
+	int m = ((1+2)*5)/10;
+	float n /* **hello** */;
+	char s[10];
+	int m[5][5];
+    printf("%d\n",&m);
+	return 0;
+
+    double n=9/* hello */,p=0;
 }
+//Program terminates

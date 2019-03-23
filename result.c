@@ -1,9 +1,12 @@
-// This is a sample program
-#include <stdio.h>
-/* this program does nothing*/
-void main() {
-int a;
-float b = 10;
-// I don't know why I need a comment here
-printf("Hello world\n");
+#include<stdio.h>
+int main() {
+printf("Hello World!!")
+;
+int m = ((1+2)*5)/10;
+float n ;
+char s[10];
+int m[5][5];
+printf("%d\n",&m);
+return 0;
+double n=9 ,p=0;
 }
