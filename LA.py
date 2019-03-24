@@ -150,32 +150,52 @@ class lexical_analyser:
             # If none of the conditions satisfy, then the character is part of the identifier name. Hence adding it to the name string.
             else:
                 self.temp += c
-        
-
 
     def identifier_entry(self):
-        """This function is used to look for the identifiers in the program and then making an entry about the identifier into the symbol table."""
-        self.result_code = open("result.c", "r")
-        self.line_array = self.result_code.readlines()
-        self.result_code.close()
+	    """This function is used to look for the identifiers in the program and then making an entry about the identifier into the symbol table."""
+	    self.result_code = open("result.c", "r")
+	    self.line_array = self.result_code.readlines()
+	    self.result_code.close()
 
-        self.symbol_table = open("symbol.csv", "w")
-    
-        # Looping over all the lines in the intermediate program.
+	    self.symbol_table = open("symbol.csv", "w")
+	    datatypes = ["int","float","char"]
+	    '''General Pattern for search and sub function for all datatype '''
+	    struct = "&& .*"
+	    struct1 = "&& "
+
+	    # Looping over all the lines in the intermediate program.
+	    for line in self.line_array:
+	        # Checking for integer declarations.
+	        for datatype in datatypes:
+	            pat = re.sub("&&",datatype,struct)
+	            pat1 = re.sub("&&",datatype,struct1)
+	            if re.search(pat,line) :
+	                dec1 = re.split(pat1,line)
+	                self.process_declaration(dec1[1])
+	    print(self.identifiers)
+	    print(self.array_structure)
+
+	    self.symbol_table.close()
+
+    def op_number(self):
+        self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
+        self.line_array = self.result_code.readlines() # Obtaining an array of strings, where each string is a line from the intermediate file.
+        self.result_code.close() # Closing the intermediate file.
+        num=0
+        l=1
         for line in self.line_array:
-            # Checking for integer declarations.
-            if re.search(r"int .*", line):
-                decl = re.split(r"int ", line) # Removing the datatype and just keeping the part where the identifiers are mentioned.
-                self.process_declaration(decl[1]) # Calling the function to identify the different variable names for all possible variations of declaration.
-
-        print(self.identifiers)
-        print(self.array_structure)
-
-        self.symbol_table.close()
+            c = None
+            c = re.findall(r"[+\-\*=/]+",line)
+            if len(c)>0:
+                print("operators:",len(c),"Line no.: ",l,c)
+                num = num + len(c)
+            l += 1
+        print("num of operators: ",num)
 
 if __name__ == '__main__':
     la = lexical_analyser() # Creating object for the class.
     la.remove_comment_lines()
     la.remove_empty_lines()
     la.remove_tab_space()
+    la.op_number()
     la.identifier_entry()
