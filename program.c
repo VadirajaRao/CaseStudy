@@ -14,6 +14,8 @@ printf("Hello World!!")
     printf("%d\n",&m);
 	return 0;
 
+    int a, b;
+    int a;
     double n=9/* hello */,p=0;
 }
 //Program terminates

@@ -84,8 +84,80 @@ class lexical_analyser:
 
         self.result_code.close() # Closing the intermediate file.
 
+    def identifier_entry(self):
+        """This function is used to look for the identifiers in the program and then making an entry about the identifier into the symbol table."""
+        self.result_code = open("result.c", "r")
+        self.line_array = self.result_code.readlines()
+        self.result_code.close()
+
+        self.symbol_table = open("symbol.csv", "w")
+        
+        self.identifiers = []
+        self.array_structure = {}
+        for line in self.line_array:
+            # Checking for integer declarations.
+            if re.search(r"int .*", line):
+                decl = re.split(r"int ", line)
+                
+                self.temp = ""
+                self.valid_identifier = ""
+                self.structure = ""
+                self.flag_array = False
+
+                for c in decl[1]:
+                    if self.flag_array:
+                        if (c == "]"):
+                            self.structure += c
+                            self.flag_array = False
+                            self.array_structure[self.identifiers[-1]] = self.structure
+                            continue
+                        elif (c == ","):
+                            continue
+                        elif (c == ";"):
+                            print(self.structure)
+                            break
+                        else:
+                            self.structure += c
+                            continue
+
+                    if c == "=":
+                        self.identifiers += self.temp
+                        break
+
+                    elif c == "[":
+                        self.identifiers += self.temp
+                        self.temp = ""
+                        self.structure += c
+                        self.flag_array = True
+
+                    elif c == "(":
+                        self.temp = ""
+                        break
+
+                    elif c == ",":
+                        self.identifiers += self.temp
+                        self.temp = ""
+                        continue
+
+                    elif c == ";":
+                        self.identifiers += self.temp
+                        self.temp = ""
+                        break
+
+                    elif c == " ":
+                        continue
+
+                    else:
+                        self.temp += c
+                
+        print(self.identifiers)
+        print(self.array_structure)
+
+        self.symbol_table.close()
+
 if __name__ == '__main__':
     la = lexical_analyser() # Creating object for the class.
     la.remove_comment_lines()
     la.remove_empty_lines()
     la.remove_tab_space()
+    la.identifier_entry()
