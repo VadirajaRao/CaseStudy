@@ -7,13 +7,14 @@ printf("Hello World!!")
 
 	;
 	//extra newline
-	int m = ((1+2)*5)/10;
-	float n /* **hello** */;
+	int m;
+	float n /* **hello** */ ;
 	char s[10];
 	int m[5][5];
     printf("%d\n",&m);
 	return 0;
 
+    int a, b;
     double n=9/* hello */,p=0;
 }
 //Program terminates
