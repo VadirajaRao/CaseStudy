@@ -83,9 +83,25 @@ class lexical_analyser:
         print("Number of lines parsed: ",count)
 
         self.result_code.close() # Closing the intermediate file.
+    
+    def op_number(self):
+        self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
+        self.line_array = self.result_code.readlines() # Obtaining an array of strings, where each string is a line from the intermediate file.
+        self.result_code.close() # Closing the intermediate file.
+        sum=0
+        l=1
+        for line in self.line_array:
+            c = None
+            c = re.findall(r"[+\-\*=/]+",line)
+            if len(c)>0:
+                print("operators:",len(c),"Line no.: ",l,c)
+                sum = sum + len(c)
+        print("Sum of operators: ",sum)
+
 
 if __name__ == '__main__':
     la = lexical_analyser() # Creating object for the class.
     la.remove_comment_lines()
     la.remove_empty_lines()
     la.remove_tab_space()
+    la.op_number()
