@@ -2,7 +2,7 @@
 int main() {
 printf("Hello World!!")
 ;
-int m;
+int mmhe;
 float n ;
 char s[10];
 int m[5][5];

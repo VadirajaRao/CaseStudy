@@ -7,7 +7,7 @@ printf("Hello World!!")
 
 	;
 	//extra newline
-	int m;
+	int mmhe;
 	float n /* **hello** */ ;
 	char s[10];
 	int m[5][5];

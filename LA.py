@@ -2,6 +2,7 @@
 
 # Library for using Regular Expression
 import re
+import csv
 
 class lexical_analyser:
     """Class that contains all the functions necessary for lexical analysis."""
@@ -16,6 +17,15 @@ class lexical_analyser:
         self.valid_identifier = ""
         self.structure = ""
         self.flag_array = False
+        filename = "sym.csv"
+        fields = ['Token_Name','datatype','Variable_name','value','address']
+        with open(filename, 'w') as csvfile: 
+    # creating a csv writer object 
+            csvwriter = csv.writer(csvfile) 
+      
+    # writing the fields 
+            csvwriter.writerow(fields)
+            csvfile.close()
 
     def remove_empty_lines(self):
         """To remove blank lines in the given program."""
@@ -90,66 +100,82 @@ class lexical_analyser:
 
         self.result_code.close() # Closing the intermediate file.
 
-    def process_declaration(self, decl):
+    def process_declaration(self, decl,datatype):
         """This function is used to process the declaration statements of variables independent of the type."""
         # Looping character by character in the string which contains only the part where variables are mentioned(without the datatype keyword).
-        for c in decl:
-            # Checking if the variable mentioned is an array declaration. This will be executed only if '[' character has been encountered earlier.
-            if self.flag_array:
-                # Checks if the '[' has a matching ']'
-                if (c == "]"):
-                    self.structure += c # Saving the current status of the array structure.
-                    self.flag_array = False # Setting flag to say that the array declaration has been processed completely.
-                    self.array_structure[self.identifiers[-1]] = self.structure # Saving the array structure(or dimension) into a dictionary.
-                    continue # Jumping into the next iteration.
-                # Checks if next variable is going to be declared.
-                elif (c == ","):
-                    continue # Jumping to the next iteration.
-                # Checks if declaration statement is ending.
-                elif (c == ";"):
-                    print(self.structure)
-                    break # Breaking out of the loop. It can also be return.
-                # If none of the conditions match then it is the dimension being mentioned.
+        filename = "sym.csv"
+        name = ""
+        i=0
+        with open(filename, 'a') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            for c in decl:
+                i=0
+                # Checking if the variable mentioned is an array declaration. This will be executed only if '[' character has been encountered earlier.
+                if self.flag_array:
+                    # Checks if the '[' has a matching ']'
+                    if (c == "]"):
+                        self.structure += c # Saving the current status of the array structure.
+                        self.flag_array = False # Setting flag to say that the array declaration has been processed completely.
+                        self.array_structure[self.identifiers[-1]] = self.structure # Saving the array structure(or dimension) into a dictionary.
+                        continue # Jumping into the next iteration.
+                    # Checks if next variable is going to be declared.
+                    elif (c == ","):
+                        continue # Jumping to the next iteration.
+                    # Checks if declaration statement is ending.
+                    elif (c == ";"):
+                        print(self.structure)
+                        break # Breaking out of the loop. It can also be return.
+                    # If none of the conditions match then it is the dimension being mentioned.
+                    else:
+                        self.structure += c # Saving the dimension into the variable that is used for saving the overall structure of the array.
+                        continue # Jumping to the next iteration.
+
+                # Checking if the variable is being assigned with a value during the declaration.
+                if c == "=":
+                    self.identifiers += self.temp # Saving the characters parsed so far as an identifier, since '=' operator marks the end of the identifier and beginning of the value.
+                    break
+
+                # Checking if an array is being declared.
+                elif c == "[":
+                    self.identifiers += self.temp # String read so far is saved as an identifier, since '[' marks the end of identifier name and begin of the dimension.
+                    self.temp = "" # Emptying the string which contained the name of the identifier.
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                        csvwriter.writerow(['Identifer',datatype+"Array",name.strip(),'',''])
+                        name = ""
+                    self.structure += c # Adding '[' into the structure variable.
+                    self.flag_array = True # Marking the beginning of dimension.
+
+                # Checking if the declaration is for a function.
+                elif c == "(":
+                    self.temp = "" # Emptying the string which holds the identifier name since it is a function name and not that of any variable.
+                    break
+
+                # Checking if the declaration is marking end of a variable name.
+                elif c == ",":
+                    self.identifiers += self.temp # Adding the name parsed so far into the list of all variables.
+                    self.temp = "" # Emptying the string which holds the name of the identifier.
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                        csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
+                        name = ""
+                    continue
+
+                # Checking if the statement has ended.
+                elif c == ";":
+                    self.identifiers += self.temp # Adding the string parsed so far into the list of identifiers.
+                    self.temp = "" # Emptying the string that holds the name of the identifier.
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                        csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
+                        name = ""
+                    break
+
+                # Checking for whitespaces within the line.
+                elif c == " ":
+                    continue
+
+                # If none of the conditions satisfy, then the character is part of the identifier name. Hence adding it to the name string.
                 else:
-                    self.structure += c # Saving the dimension into the variable that is used for saving the overall structure of the array.
-                    continue # Jumping to the next iteration.
-
-            # Checking if the variable is being assigned with a value during the declaration.
-            if c == "=":
-                self.identifiers += self.temp # Saving the characters parsed so far as an identifier, since '=' operator marks the end of the identifier and beginning of the value.
-                break
-
-            # Checking if an array is being declared.
-            elif c == "[":
-                self.identifiers += self.temp # String read so far is saved as an identifier, since '[' marks the end of identifier name and begin of the dimension.
-                self.temp = "" # Emptying the string which contained the name of the identifier.
-                self.structure += c # Adding '[' into the structure variable.
-                self.flag_array = True # Marking the beginning of dimension.
-
-            # Checking if the declaration is for a function.
-            elif c == "(":
-                self.temp = "" # Emptying the string which holds the identifier name since it is a function name and not that of any variable.
-                break
-
-            # Checking if the declaration is marking end of a variable name.
-            elif c == ",":
-                self.identifiers += self.temp # Adding the name parsed so far into the list of all variables.
-                self.temp = "" # Emptying the string which holds the name of the identifier.
-                continue
-
-            # Checking if the statement has ended.
-            elif c == ";":
-                self.identifiers += self.temp # Adding the string parsed so far into the list of identifiers.
-                self.temp = "" # Emptying the string that holds the name of the identifier.
-                break
-
-            # Checking for whitespaces within the line.
-            elif c == " ":
-                continue
-
-            # If none of the conditions satisfy, then the character is part of the identifier name. Hence adding it to the name string.
-            else:
-                self.temp += c
+                    self.temp += c
+                    name += c
 
     def identifier_entry(self):
 	    """This function is used to look for the identifiers in the program and then making an entry about the identifier into the symbol table."""
@@ -158,7 +184,7 @@ class lexical_analyser:
 	    self.result_code.close()
 
 	    self.symbol_table = open("symbol.csv", "w")
-	    datatypes = ["int","float","char"]
+	    datatypes = ["int","float","char"] #the datatypes
 	    '''General Pattern for search and sub function for all datatype '''
 	    struct = "&& .*"
 	    struct1 = "&& "
@@ -171,7 +197,7 @@ class lexical_analyser:
 	            pat1 = re.sub("&&",datatype,struct1)
 	            if re.search(pat,line) :
 	                dec1 = re.split(pat1,line)
-	                self.process_declaration(dec1[1])
+	                self.process_declaration(dec1[1],datatype)
 	    print(self.identifiers)
 	    print(self.array_structure)
 
