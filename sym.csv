@@ -1,7 +1,7 @@
-Token_Name,datatype,Variable_name,value,address
-Identifer,int,mmhe,,
-Identifer,float,n,,
-Identifer,charArray,s,,
-Identifer,intArray,m,,
-Identifer,int,a,,
-Identifer,int,b,,
+Token_Name,datatype,Variable_name,value,address
+Identifer,int,mmhe,,
+Identifer,float,n,,
+Identifer,charArray,s,,
+Identifer,intArray,m,,
+Identifer,int,a,,
+Identifer,int,b,,
