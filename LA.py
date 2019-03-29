@@ -80,8 +80,8 @@ class lexical_analyser:
                 if len(temp[0].strip())>0:
                     self.result_code.write(temp[0].strip())
                     self.result_code.write("\n")
-            elif re.search(r"/\*",line): # Searches for /* in the line
-                temp = re.split(r"/\*",line) # Divides the line into portion with /* as center
+            elif re.search(r"/\*",line): # Searches for /* in the line.'\' is to remove the escape charcter
+                temp = re.split(r"/\*",line) # Divides the line into two portions with /* as center
                 flag_multi_comment=True # Sets multi-line flag to True
                 if len(temp[0].strip())>0:  #contents to the left of /*
                     self.result_code.write(temp[0].strip()+" ")
