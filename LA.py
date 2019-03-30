@@ -208,7 +208,7 @@ class lexical_analyser:
 	    self.line_array = self.result_code.readlines()
 	    self.result_code.close()
 
-	    self.symbol_table = open("symbol.csv", "w")
+	    #self.symbol_table = open("symbol.csv", "w")
 	    datatypes = ["int","float","char"] #the datatypes
 	    '''General Pattern for search and sub function for all datatype '''
 	    struct = "&& .*"
@@ -226,7 +226,7 @@ class lexical_analyser:
 	    print(self.identifiers)
 	    print(self.array_structure)
 
-	    self.symbol_table.close()
+	    #self.symbol_table.close()
 
     def op_number(self):
         self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
