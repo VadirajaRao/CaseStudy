@@ -10,7 +10,7 @@ class lexical_analyser:
         self.code = open("program.c", "r") # Opening the input file in 'read' mode.
         self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
         self.line_array = self.code.readlines() # Obtaining an array of strings, where each string is a line from the input file.
-        self.code.close();
+        self.code.close()
         self.identifiers = []
         self.array_structure = {}
         self.temp = ""
@@ -66,7 +66,7 @@ class lexical_analyser:
     # NOTE: This function is made highly generalised for most kinda comments. But do test it
     def remove_comment_lines(self):
         flag_multi_comment = False #This flag is set to `True` only when theres a multi line comment
-        count=0; # Just for debugging purpose. Keeps the count of the number of lines read from input file
+        count=0 # Just for debugging purpose. Keeps the count of the number of lines read from input file
         for line in self.line_array:
             count += 1
             if flag_multi_comment == True: # If it is a multi-line comment search for `*/` 
@@ -100,30 +100,34 @@ class lexical_analyser:
 
         self.result_code.close() # Closing the intermediate file.
 
-#    def check(self, c_name):
-#        filename1 ="sym.csv"
-#        redc = False    #setting the identifier redundancy flag to false
-#        with open(filename1, 'r') as csvfile1: 
-#            # creating a csv writer object 
-#            csvreader1 = csv.reader(csvfile1,delimiter=',')
-#            next(csvreader1)    #skips the header name in the csv file(first row.)
-#            
-#            for line in csvreader1:
-#                if c_name is line[2]:   #checking for redundant identifiers in the csv file(symbol table)
-#                        redc = True     #setting the redundancy flag to true
-#                        print("Duplicate declaration of Identifier: "+c_name)
-#                        break
-#                else:
-#                    pass
-#            csvfile1.close()
-#        return redc     #returning true /false depending on the redundancy check
+    def check(self, c_name):
+        filename1 ="sym.csv"
+        redc = False    #setting the identifier redundancy flag to false
+        with open(filename1) as csvfile1: 
+            # creating a csv writer object 
+            csvreader1 = csv.DictReader(csvfile1)
+            #skips the header name in the csv file(first row.)
+            lcount = 0
+            for line in csvreader1:
+                if lcount == 0:
+                    pass
+                else:
+                    if c_name is line['Variable_name']:   #checking for redundant identifiers in the csv file(symbol table)
+                            redc = True     #setting the redundancy flag to true
+                            print("Duplicate declaration of Identifier: "+c_name)
+                            break
+                    else:
+                        pass
+                lcount += 1
+            csvfile1.close()
+        return redc     #returning true /false depending on the redundancy check
 
     def process_declaration(self, decl,datatype):
         """This function is used to process the declaration statements of variables independent of the type."""
         # Looping character by character in the string which contains only the part where variables are mentioned(without the datatype keyword).
         filename = "sym.csv"
         name = ""
-        i=0
+        #i=0
         with open(filename, 'a') as csvfile:
             csvwriter = csv.writer(csvfile)
             for c in decl:
