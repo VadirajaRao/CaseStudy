@@ -1,7 +1,11 @@
 Token_Name,datatype,Variable_name,value,address
 Identifer,int,mmhe,,
 Identifer,float,n,,
+Identifer,int,n,,
+Identifier,int,hello,7,
 Identifer,charArray,s,,
 Identifer,intArray,m,,
 Identifer,int,a,,
 Identifer,int,b,,
+Identifier,double,n,9.0,
+Identifier,double,.p,0.9,

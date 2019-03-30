@@ -9,12 +9,15 @@ printf("Hello World!!")
 	//extra newline
 	int mmhe;
 	float n /* /* /* **hello** */ ;
+	int n;
+	int hello = 7;
 	char s[10];
 	int m[5][5];
     printf("%d\n",&m);
 	return 0;
 
     int a, b;
-    double n=9/* /* hello */,p=0;
+    double n=9.0/* /* hello */,p=0.9;
+
 }
 //Program terminates
