@@ -80,8 +80,8 @@ class lexical_analyser:
                 if len(temp[0].strip())>0:
                     self.result_code.write(temp[0].strip())
                     self.result_code.write("\n")
-            elif re.search(r"/\*",line): # Searches for /* in the line.'\' is to remove the escape charcter
-                temp = re.split(r"/\*",line) # Divides the line into two portions with /* as center
+            elif re.search(r"/\*",line): # Searches for /* in the line
+                temp = re.split(r"/\*",line) # Divides the line into portion with /* as center
                 flag_multi_comment=True # Sets multi-line flag to True
                 if len(temp[0].strip())>0:  #contents to the left of /*
                     self.result_code.write(temp[0].strip()+" ")
@@ -99,6 +99,24 @@ class lexical_analyser:
         print("Number of lines parsed: ",count)
 
         self.result_code.close() # Closing the intermediate file.
+
+#    def check(self, c_name):
+#        filename1 ="sym.csv"
+#        redc = False    #setting the identifier redundancy flag to false
+#        with open(filename1, 'r') as csvfile1: 
+#            # creating a csv writer object 
+#            csvreader1 = csv.reader(csvfile1,delimiter=',')
+#            next(csvreader1)    #skips the header name in the csv file(first row.)
+#            
+#            for line in csvreader1:
+#                if c_name is line[2]:   #checking for redundant identifiers in the csv file(symbol table)
+#                        redc = True     #setting the redundancy flag to true
+#                        print("Duplicate declaration of Identifier: "+c_name)
+#                        break
+#                else:
+#                    pass
+#            csvfile1.close()
+#        return redc     #returning true /false depending on the redundancy check
 
     def process_declaration(self, decl,datatype):
         """This function is used to process the declaration statements of variables independent of the type."""
@@ -133,13 +151,16 @@ class lexical_analyser:
                 # Checking if the variable is being assigned with a value during the declaration.
                 if c == "=":
                     self.identifiers += self.temp # Saving the characters parsed so far as an identifier, since '=' operator marks the end of the identifier and beginning of the value.
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
+                        csvwriter.writerow(['Identifer',datatype,name.strip(),'Value?','']) #vikash here value? should be the value assigned.
+                        name = ""
                     break
 
                 # Checking if an array is being declared.
                 elif c == "[":
                     self.identifiers += self.temp # String read so far is saved as an identifier, since '[' marks the end of identifier name and begin of the dimension.
                     self.temp = "" # Emptying the string which contained the name of the identifier.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
                         csvwriter.writerow(['Identifer',datatype+"Array",name.strip(),'',''])
                         name = ""
                     self.structure += c # Adding '[' into the structure variable.
@@ -154,7 +175,7 @@ class lexical_analyser:
                 elif c == ",":
                     self.identifiers += self.temp # Adding the name parsed so far into the list of all variables.
                     self.temp = "" # Emptying the string which holds the name of the identifier.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
                         csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
                         name = ""
                     continue
@@ -163,7 +184,7 @@ class lexical_analyser:
                 elif c == ";":
                     self.identifiers += self.temp # Adding the string parsed so far into the list of identifiers.
                     self.temp = "" # Emptying the string that holds the name of the identifier.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
                         csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
                         name = ""
                     break
