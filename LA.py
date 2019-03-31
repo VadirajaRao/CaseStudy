@@ -238,7 +238,7 @@ class lexical_analyser:
 	    self.line_array = self.result_code.readlines()
 	    self.result_code.close()
 
-	    self.symbol_table = open("symbol.csv", "w")
+	    #self.symbol_table = open("symbol.csv", "w")
 	    datatypes = ["int","float","char","double"] #the datatypes
 	    '''General Pattern for search and sub function for all datatype '''
 	    struct = "&& .*"
