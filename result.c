@@ -7,6 +7,7 @@ float n ;
 int n;
 int hello = 7;
 char s[10];
+char n;
 int m[5][5];
 printf("%d\n",&m);
 return 0;
