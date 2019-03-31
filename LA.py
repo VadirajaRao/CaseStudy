@@ -10,7 +10,7 @@ class lexical_analyser:
         self.code = open("program.c", "r") # Opening the input file in 'read' mode.
         self.result_code = open("result.c", "w") # Opening the intermediate file in 'write' mode.
         self.line_array = self.code.readlines() # Obtaining an array of strings, where each string is a line from the input file.
-        self.code.close();
+        self.code.close()
         self.identifiers = []
         self.array_structure = {}
         self.temp = ""
@@ -66,7 +66,7 @@ class lexical_analyser:
     # NOTE: This function is made highly generalised for most kinda comments. But do test it
     def remove_comment_lines(self):
         flag_multi_comment = False #This flag is set to `True` only when theres a multi line comment
-        count=0; # Just for debugging purpose. Keeps the count of the number of lines read from input file
+        count=0 # Just for debugging purpose. Keeps the count of the number of lines read from input file
         for line in self.line_array:
             count += 1
             if flag_multi_comment == True: # If it is a multi-line comment search for `*/` 
@@ -80,8 +80,8 @@ class lexical_analyser:
                 if len(temp[0].strip())>0:
                     self.result_code.write(temp[0].strip())
                     self.result_code.write("\n")
-            elif re.search(r"/\*",line): # Searches for /* in the line.'\' is to remove the escape charcter
-                temp = re.split(r"/\*",line) # Divides the line into two portions with /* as center
+            elif re.search(r"/\*",line): # Searches for /* in the line
+                temp = re.split(r"/\*",line) # Divides the line into portion with /* as center
                 flag_multi_comment=True # Sets multi-line flag to True
                 if len(temp[0].strip())>0:  #contents to the left of /*
                     self.result_code.write(temp[0].strip()+" ")
@@ -100,15 +100,42 @@ class lexical_analyser:
 
         self.result_code.close() # Closing the intermediate file.
 
+    def check(self, c_name):
+        filename1 ="sym.csv"
+        redc = False    #setting the identifier redundancy flag to false
+        with open(filename1) as csvfile1: 
+            # creating a csv writer object 
+            csvreader1 = csv.DictReader(csvfile1)
+            #skips the header name in the csv file(first row.)
+            lcount = 0
+            for line in csvreader1:
+                if lcount == 0:
+                    pass
+                else:
+                    if c_name is line['Variable_name']:   #checking for redundant identifiers in the csv file(symbol table)
+                            redc = True     #setting the redundancy flag to true
+                            print("Duplicate declaration of Identifier: "+c_name)
+                            break
+                    else:
+                        pass
+                lcount += 1
+            csvfile1.close()
+        return redc     #returning true /false depending on the redundancy check
+
     def process_declaration(self, decl,datatype):
+
         """This function is used to process the declaration statements of variables independent of the type."""
         # Looping character by character in the string which contains only the part where variables are mentioned(without the datatype keyword).
         filename = "sym.csv"
         name = ""
         i=0
+        pos=-1
+        flag=0 #used to track identifiers with having digits
         with open(filename, 'a') as csvfile:
             csvwriter = csv.writer(csvfile)
             for c in decl:
+                
+                pos += 1
                 i=0
                 # Checking if the variable mentioned is an array declaration. This will be executed only if '[' character has been encountered earlier.
                 if self.flag_array:
@@ -131,15 +158,30 @@ class lexical_analyser:
                         continue # Jumping to the next iteration.
 
                 # Checking if the variable is being assigned with a value during the declaration.
+               
                 if c == "=":
+                    flag=1 #this means the encountered digits are values
                     self.identifiers += self.temp # Saving the characters parsed so far as an identifier, since '=' operator marks the end of the identifier and beginning of the value.
-                    break
+
+                    if(len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip()))):
+                        if(re.search(r"[0-9]", decl).start()):
+                            indexValue = re.search(r"[0-9\.]+", decl[pos:]).start()
+                            lastValue = re.search(r"[0-9\.]+", decl[pos:]).end()
+                            value = decl[pos+indexValue:pos+lastValue]
+                            csvwriter.writerow(['Identifier',datatype,name.strip(),value,''])
+                            name=""
+                            
+                            continue
+                        csvwriter.writerow(['Identifier',datatype,name.strip(),'',''])
+                        name = ""
+                        
+                    
 
                 # Checking if an array is being declared.
                 elif c == "[":
                     self.identifiers += self.temp # String read so far is saved as an identifier, since '[' marks the end of identifier name and begin of the dimension.
                     self.temp = "" # Emptying the string which contained the name of the identifier.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
                         csvwriter.writerow(['Identifer',datatype+"Array",name.strip(),'',''])
                         name = ""
                     self.structure += c # Adding '[' into the structure variable.
@@ -152,9 +194,12 @@ class lexical_analyser:
 
                 # Checking if the declaration is marking end of a variable name.
                 elif c == ",":
+                    flag=0 #after "," it's possible that identifier has digit in it. So, make flag 0 again
                     self.identifiers += self.temp # Adding the name parsed so far into the list of all variables.
                     self.temp = "" # Emptying the string which holds the name of the identifier.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
+                        # if(re.search())
+                            
                         csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
                         name = ""
                     continue
@@ -163,7 +208,7 @@ class lexical_analyser:
                 elif c == ";":
                     self.identifiers += self.temp # Adding the string parsed so far into the list of identifiers.
                     self.temp = "" # Emptying the string that holds the name of the identifier.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()):
+                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
                         csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
                         name = ""
                     break
@@ -171,11 +216,21 @@ class lexical_analyser:
                 # Checking for whitespaces within the line.
                 elif c == " ":
                     continue
+                #Doesn't take values as identifier names
+                elif(re.search(r'[0-9]',c)):
+                    if(flag == 1): #check if it's value or identifier
+                        continue
+                    else:
+                        self.temp += c
+                        name += c
 
                 # If none of the conditions satisfy, then the character is part of the identifier name. Hence adding it to the name string.
                 else:
                     self.temp += c
                     name += c
+                
+                
+                
 
     def identifier_entry(self):
 	    """This function is used to look for the identifiers in the program and then making an entry about the identifier into the symbol table."""
@@ -183,8 +238,8 @@ class lexical_analyser:
 	    self.line_array = self.result_code.readlines()
 	    self.result_code.close()
 
-	    self.symbol_table = open("symbol.csv", "w")
-	    datatypes = ["int","float","char"] #the datatypes
+	    #self.symbol_table = open("symbol.csv", "w")
+	    datatypes = ["int","float","char","double"] #the datatypes
 	    '''General Pattern for search and sub function for all datatype '''
 	    struct = "&& .*"
 	    struct1 = "&& "
@@ -195,13 +250,14 @@ class lexical_analyser:
 	        for datatype in datatypes:
 	            pat = re.sub("&&",datatype,struct)
 	            pat1 = re.sub("&&",datatype,struct1)
-	            if re.search(pat,line) :
+	            if re.search(pat,line):
 	                dec1 = re.split(pat1,line)
+                
 	                self.process_declaration(dec1[1],datatype)
 	    print(self.identifiers)
 	    print(self.array_structure)
 
-	    self.symbol_table.close()
+	    #self.symbol_table.close()
 
     def op_number(self):
         self.result_code = open("result.c", "r") # Opening the intermediate file in 'read' mode.
@@ -217,6 +273,23 @@ class lexical_analyser:
                 num = num + len(c)
             l += 1
         print("num of operators: ",num)
+
+
+    # def declaration_values(self):
+	#     """look for the identifiers in the program and then
+    #      make an entry about the identifier and their value
+    #     into the symbol table."""
+
+	#     self.result_code = open("result.c", "r")
+	#     self.line_array = self.result_code.readlines()
+	#     self.result_code.close()
+    #     datatypes = ["int","float","double","long","char"]
+
+    #     for line in self.line_array:
+    #         for d in datatypes:
+    #             if(re.search(d,line)):
+
+
 
 if __name__ == '__main__':
     la = lexical_analyser() # Creating object for the class.
