@@ -12,5 +12,5 @@ int m[5][5];
 printf("%d\n",&m);
 return 0;
 int a, b;
-double n=9 ,p=0;
+double n=9.0 ,p=0.9;
 }

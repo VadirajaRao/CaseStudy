@@ -19,6 +19,7 @@ printf("Hello World!!")
 	return 0;
 
     int a, b;
-    double n=9/* /* hello */,p=0;
+    double n=9.0/* /* hello */,p=0.9;
+
 }
 //Program terminates

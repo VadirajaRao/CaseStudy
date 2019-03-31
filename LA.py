@@ -123,14 +123,19 @@ class lexical_analyser:
         return redc     #returning true /false depending on the redundancy check
 
     def process_declaration(self, decl,datatype):
+
         """This function is used to process the declaration statements of variables independent of the type."""
         # Looping character by character in the string which contains only the part where variables are mentioned(without the datatype keyword).
         filename = "sym.csv"
         name = ""
-        #i=0
+        i=0
+        pos=-1
+        flag=0 #used to track identifiers with having digits
         with open(filename, 'a') as csvfile:
             csvwriter = csv.writer(csvfile)
             for c in decl:
+                
+                pos += 1
                 i=0
                 # Checking if the variable mentioned is an array declaration. This will be executed only if '[' character has been encountered earlier.
                 if self.flag_array:
@@ -153,12 +158,24 @@ class lexical_analyser:
                         continue # Jumping to the next iteration.
 
                 # Checking if the variable is being assigned with a value during the declaration.
+               
                 if c == "=":
+                    flag=1 #this means the encountered digits are values
                     self.identifiers += self.temp # Saving the characters parsed so far as an identifier, since '=' operator marks the end of the identifier and beginning of the value.
-                    if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
-                        csvwriter.writerow(['Identifer',datatype,name.strip(),'Value?','']) #vikash here value? should be the value assigned.
+
+                    if(len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip()))):
+                        if(re.search(r"[0-9]", decl).start()):
+                            indexValue = re.search(r"[0-9\.]+", decl[pos:]).start()
+                            lastValue = re.search(r"[0-9\.]+", decl[pos:]).end()
+                            value = decl[pos+indexValue:pos+lastValue]
+                            csvwriter.writerow(['Identifier',datatype,name.strip(),value,''])
+                            name=""
+                            
+                            continue
+                        csvwriter.writerow(['Identifier',datatype,name.strip(),'',''])
                         name = ""
-                    break
+                        
+                    
 
                 # Checking if an array is being declared.
                 elif c == "[":
@@ -177,9 +194,12 @@ class lexical_analyser:
 
                 # Checking if the declaration is marking end of a variable name.
                 elif c == ",":
+                    flag=0 #after "," it's possible that identifier has digit in it. So, make flag 0 again
                     self.identifiers += self.temp # Adding the name parsed so far into the list of all variables.
                     self.temp = "" # Emptying the string which holds the name of the identifier.
                     if len(name.strip())>0 and re.search(r"[a-zA-Z_][a-zA-Z_0-9]*",name.strip()) and not(self.check(name.strip())):
+                        # if(re.search())
+                            
                         csvwriter.writerow(['Identifer',datatype,name.strip(),'',''])
                         name = ""
                     continue
@@ -196,11 +216,21 @@ class lexical_analyser:
                 # Checking for whitespaces within the line.
                 elif c == " ":
                     continue
+                #Doesn't take values as identifier names
+                elif(re.search(r'[0-9]',c)):
+                    if(flag == 1): #check if it's value or identifier
+                        continue
+                    else:
+                        self.temp += c
+                        name += c
 
                 # If none of the conditions satisfy, then the character is part of the identifier name. Hence adding it to the name string.
                 else:
                     self.temp += c
                     name += c
+                
+                
+                
 
     def identifier_entry(self):
 	    """This function is used to look for the identifiers in the program and then making an entry about the identifier into the symbol table."""
@@ -208,8 +238,8 @@ class lexical_analyser:
 	    self.line_array = self.result_code.readlines()
 	    self.result_code.close()
 
-	    #self.symbol_table = open("symbol.csv", "w")
-	    datatypes = ["int","float","char"] #the datatypes
+	    self.symbol_table = open("symbol.csv", "w")
+	    datatypes = ["int","float","char","double"] #the datatypes
 	    '''General Pattern for search and sub function for all datatype '''
 	    struct = "&& .*"
 	    struct1 = "&& "
@@ -220,8 +250,9 @@ class lexical_analyser:
 	        for datatype in datatypes:
 	            pat = re.sub("&&",datatype,struct)
 	            pat1 = re.sub("&&",datatype,struct1)
-	            if re.search(pat,line) :
+	            if re.search(pat,line):
 	                dec1 = re.split(pat1,line)
+                
 	                self.process_declaration(dec1[1],datatype)
 	    print(self.identifiers)
 	    print(self.array_structure)
@@ -242,6 +273,23 @@ class lexical_analyser:
                 num = num + len(c)
             l += 1
         print("num of operators: ",num)
+
+
+    # def declaration_values(self):
+	#     """look for the identifiers in the program and then
+    #      make an entry about the identifier and their value
+    #     into the symbol table."""
+
+	#     self.result_code = open("result.c", "r")
+	#     self.line_array = self.result_code.readlines()
+	#     self.result_code.close()
+    #     datatypes = ["int","float","double","long","char"]
+
+    #     for line in self.line_array:
+    #         for d in datatypes:
+    #             if(re.search(d,line)):
+
+
 
 if __name__ == '__main__':
     la = lexical_analyser() # Creating object for the class.
