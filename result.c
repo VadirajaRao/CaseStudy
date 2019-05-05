@@ -2,11 +2,15 @@
 int main() {
 printf("Hello World!!")
 ;
-int m = ((1+2)*5)/10;
+int mmhe;
 float n ;
+int n;
+int hello = 7;
 char s[10];
+char n;
 int m[5][5];
 printf("%d\n",&m);
 return 0;
-double n=9 ,p=0;
+int a, b;
+double n=9.0 ,p=0.9;
 }
